@@ -1,0 +1,43 @@
+# Définition des étapes du pipeline GitLab CI/CD
+stages:
+  - unzip
+  - check
+  - run
+
+# Étape 1 : Dézipper le fichier .whl
+unzip_wheel:
+  stage: unzip
+  script:
+    - echo "Décompression du fichier .whl..."
+    - python -c "import zipfile; zipfile.ZipFile('dist/PackageTag-0.0.0-py3-none-any.whl', 'r').extractall('whl_extracted')"
+  tags:
+    - docker
+
+# Étape 2 : Vérifier la présence de setup.cfg
+check_setup_cfg:
+  stage: check
+  script:
+    - echo "Vérification de setup.cfg..."
+    - test -f "whl_extracted/setup.cfg" && echo "setup.cfg trouvé" || { echo "setup.cfg manquant"; exit 1; }
+  tags:
+    - docker
+
+# Étape 3 : Extraire la version de setup.cfg
+extract_version:
+  stage: check
+  script:
+    - echo "Extraction de la version depuis setup.cfg..."
+    - set -e  # Arrêter si une commande échoue
+    - version=$(grep '^version' whl_extracted/setup.cfg | cut -d'=' -f2 | tr -d '[:space:]')
+    - echo "Version trouvée : $version"
+  tags:
+    - docker
+
+# Étape 4 : Exécuter un script Python
+run_python_script:
+  stage: run
+  script:
+    - echo "Exécution du script Python..."
+    - python PackageTag/unzip_whl.py
+  tags:
+    - docker
