@@ -27,7 +27,7 @@ extract_version:
   stage: check
   script:
     - echo "Extraction de la version depuis setup.cfg..."
-    - set -e  # Arrêter si une commande échoue
+    - set -e
     - version=$(grep '^version' whl_extracted/setup.cfg | cut -d'=' -f2 | tr -d '[:space:]')
     - echo "Version trouvée : $version"
   tags:
